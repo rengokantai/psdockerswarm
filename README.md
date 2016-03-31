@@ -121,3 +121,51 @@ in manager node2,run
 ```
 curl http://172.31.55.46:8500/v1/catalog/service/swarm | python -m json.tool
 ```
+
+#####security
+######create CA and key
+CA(root key)
+```
+openssl genrsa -out ca-key.pem 2048
+openssl req -config /usr/lib/ssl/openssl.cnf -new -key ca-key.pem -x509 -days 1825 -out ca-cert.pem
+```
+do this in all 4 machines:
+```
+mkdir .docker
+chmod 777 .docker
+```
+public key->cert.pem private->key.pem  
+
+######securing daemons
+system command:
+```
+vim /etc/systemd/system/docker.service.d   (/etc/default/docker)
+```
+edit:
+```
+DOCKER_OPTS="-H tcp://0.0.0.0:2376 --tlsverify --tlscacert=/home/ubuntu/.docker/ca.pem --tlscert=/home/ubuntu/.docker/cert.pem --tlskey=/home/ubuntu/.docker/key.pem"
+```
+
+
+######client node
+export manager1 node ip address
+```
+export DOCKER_HOST=172.31.48.79:3376
+export DOCKER_TLS_VERIFY=1
+export DOCKER_CERT_PATH=/home/ubuntu/.docker
+```
+
+######custom constraints
+```
+vim /etc/default/docker
+```
+
+edit
+```
+DOCKER_OPTS: --label k1=y1 k2=y2
+```
+
+pull image:
+```
+docker run -d --name newcontainer -e constraint:k1=v1 constraint:k2=v2 nginx
+```
