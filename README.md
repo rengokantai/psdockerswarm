@@ -90,3 +90,34 @@ docker run --restart=unless-stopped -d -h consul-agt2 --name consul-agt2 -p 8300
 ```
 docker run -d swarm join --advertise=172.31.55.136:2375 consul://172.31.55.136:8500/
 ```
+######check:
+in manager node 1
+```
+docker exec -it consul2 bash
+consul members
+```
+should see 2 servers and 2 clients.  
+  
+in manager node 2
+```
+curl http://172.31.50.19:8500/v1/catalog/nodes | python -m json.tool
+```
+if run
+```
+docker stop consul2	//docker start consul2
+```
+we can see `failed` signal in manager node1.
+
+install refistrar in all 4 nodes:(ip=clientnode2)
+```
+docker run -d --name registrator -h registrator -v /var/run/docker.sock:/tmp/docker.sock gliderlabs/registrator:latest consul://172.31.48.136:8500
+```
+
+install nginx in client node 1
+```
+docker run -d --name web1 -p 80:80 nginx
+```
+in manager node2,run
+```
+curl http://172.31.55.46:8500/v1/catalog/service/swarm | python -m json.tool
+```
