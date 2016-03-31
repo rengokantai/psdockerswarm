@@ -56,3 +56,18 @@ verify
 docker exec -it consul2 bash
 consul members
 ```
+######building HA swarm mgr
+NODE1
+```
+docker run --restart=unless-stopped -h mgr1 --name mgr1 -d -p 3375:2375 swarm manage --replication --advertise 172.31.48.79:3375 consul://172.31.48.79:8500/
+```
+check log and ps
+```
+docker logs mgr1
+docker ps
+```
+	
+NODE2
+```
+docker run --restart=unless-stopped -h mgr2 --name mgr2 -d -p 3375:2375 swarm manage --replication --advertise 172.31.50.19:3375 consul://172.31.50.19:8500/
+```
